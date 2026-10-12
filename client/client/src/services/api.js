@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Reads from client/.env → VITE_API_URL, falls back to localhost:5008
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5008/api/v1";
+  import.meta.env.VITE_API_URL || "https://ecommercewebsite-pi-lovat.vercel.app/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
