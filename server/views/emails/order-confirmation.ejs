@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation - Nexora</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #F8F6F0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #111111;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #F8F6F0;
+      padding: 40px 16px;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #FFFFFF;
+      border: 1px solid #EAE6DC;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .header {
+      background-color: #0C1413;
+      padding: 36px 32px;
+      text-align: center;
+    }
+    .brand {
+      color: #FFFFFF;
+      font-size: 24px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin: 0;
+    }
+    .brand-accent {
+      color: #10B981;
+    }
+    .content {
+      padding: 36px 32px;
+      line-height: 1.6;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background-color: rgba(15, 118, 110, 0.12);
+      color: #0F766E;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .greeting {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0D1B1A;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .order-meta {
+      font-size: 13px;
+      color: #6B7280;
+      margin-bottom: 24px;
+    }
+    .order-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+    }
+    .order-table th {
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6B7280;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #EAE6DC;
+    }
+    .order-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid #F3F4F6;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+    .item-img {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #EAE6DC;
+      margin-right: 12px;
+      vertical-align: middle;
+    }
+    .summary-box {
+      background-color: #FAFAF9;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 24px 0;
+      font-size: 14px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      color: #4B5563;
+    }
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 16px;
+      font-weight: 700;
+      color: #111111;
+      padding-top: 8px;
+      border-top: 1px solid #E5E7EB;
+    }
+    .address-box {
+      border: 1px solid #EAE6DC;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px 0;
+      font-size: 13px;
+      color: #4B5563;
+      line-height: 1.5;
+    }
+    .button-box {
+      text-align: center;
+      margin: 32px 0 16px 0;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #0F766E;
+      color: #FFFFFF !important;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+    .footer {
+      background-color: #FAFAF9;
+      border-top: 1px solid #EAE6DC;
+      padding: 24px 32px;
+      text-align: center;
+      font-size: 12px;
+      color: #9CA3AF;
+    }
+    .footer a {
+      color: #0F766E;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="brand">NEXORA<span class="brand-accent">.</span></h1>
+      </div>
+      <div class="content">
+        <span class="badge">Order Received</span>
+        <h2 class="greeting">Thank you for your order!</h2>
+        <div class="order-meta">
+          Order reference: <strong>#<%= order._id ? order._id.toString().slice(-6).toUpperCase() : 'ORD' %></strong> &bull;
+          Placed on: <%= new Date(order.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+        </div>
+
+        <p>We are preparing your items for dispatch. You will receive an update once your parcel is on its way.</p>
+
+        <!-- Order Items -->
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th style="text-align: center;">Qty</th>
+              <th style="text-align: right;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% (order.orderItems || []).forEach(function(item) { %>
+              <tr>
+                <td>
+                  <% if (item.image) { %>
+                    <img src="<%= item.image %>" alt="<%= item.name %>" class="item-img" />
+                  <% } %>
+                  <strong><%= item.name %></strong>
+                </td>
+                <td style="text-align: center;"><%= item.quantity %></td>
+                <td style="text-align: right; font-weight: 600;">₦<%= (item.price * item.quantity).toLocaleString() %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+
+        <!-- Summary -->
+        <div class="summary-box">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>₦<%= (order.subtotal || 0).toLocaleString() %></span>
+          </div>
+          <div class="summary-row">
+            <span>Shipping</span>
+            <span>₦<%= (order.shippingPrice || 0).toLocaleString() %></span>
+          </div>
+          <% if (order.discount && order.discount > 0) { %>
+            <div class="summary-row" style="color: #0F766E;">
+              <span>Discount</span>
+              <span>-₦<%= order.discount.toLocaleString() %></span>
+            </div>
+          <% } %>
+          <div class="summary-total">
+            <span>Total Amount</span>
+            <span>₦<%= (order.totalAmount || 0).toLocaleString() %></span>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <% if (order.shippingAddress) { %>
+          <div class="address-box">
+            <strong>Shipping Destination:</strong><br>
+            <%= order.shippingAddress.firstname %> <%= order.shippingAddress.lastname %><br>
+            <%= order.shippingAddress.street %><br>
+            <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> <%= order.shippingAddress.postalCode %><br>
+            <%= order.shippingAddress.country %><br>
+            Tel: <%= order.shippingAddress.phone %>
+          </div>
+        <% } %>
+
+        <div class="button-box">
+          <a href="<%= clientUrl %>/orders/<%= order._id %>" class="btn">View Order Status</a>
+        </div>
+      </div>
+      <div class="footer">
+        &copy; <%= year %> Nexora Maison. All rights reserved.<br>
+        <a href="<%= clientUrl %>">Return to Storefront</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

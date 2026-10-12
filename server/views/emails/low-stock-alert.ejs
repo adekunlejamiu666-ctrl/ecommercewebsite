@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Low Stock Alert - Nexora Admin</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #F8F6F0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #111111;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #F8F6F0;
+      padding: 40px 16px;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #FFFFFF;
+      border: 1px solid #EAE6DC;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .header {
+      background-color: #0C1413;
+      padding: 36px 32px;
+      text-align: center;
+    }
+    .brand {
+      color: #FFFFFF;
+      font-size: 24px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin: 0;
+    }
+    .brand-accent {
+      color: #F59E0B;
+    }
+    .content {
+      padding: 36px 32px;
+      line-height: 1.6;
+    }
+    .badge-alert {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background-color: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FCD34D;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .greeting {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0D1B1A;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .product-card {
+      display: flex;
+      align-items: center;
+      background-color: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 24px 0;
+    }
+    .product-img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #E5E7EB;
+      margin-right: 16px;
+    }
+    .stock-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background-color: #EF4444;
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .details-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .details-table td:first-child {
+      color: #6B7280;
+      width: 40%;
+    }
+    .details-table td:last-child {
+      font-weight: 600;
+      color: #111111;
+    }
+    .button-box {
+      text-align: center;
+      margin: 32px 0 16px 0;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #0F766E;
+      color: #FFFFFF !important;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+    .footer {
+      background-color: #FAFAF9;
+      border-top: 1px solid #EAE6DC;
+      padding: 24px 32px;
+      text-align: center;
+      font-size: 12px;
+      color: #9CA3AF;
+    }
+    .footer a {
+      color: #0F766E;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="brand">NEXORA<span class="brand-accent">.</span></h1>
+      </div>
+      <div class="content">
+        <span class="badge-alert">&#9888; Inventory Telemetry Alert</span>
+        <h2 class="greeting">Low Stock Catalog Notification</h2>
+        <p>A catalog offering has dropped below the minimum safety threshold (fewer than 10 units remaining). Action is recommended to replenish stock or pause marketing.</p>
+
+        <table class="details-table">
+          <tr>
+            <td>Product Name</td>
+            <td><%= product.name %></td>
+          </tr>
+          <tr>
+            <td>Current Inventory</td>
+            <td>
+              <span class="stock-badge">
+                <%= product.stock === 0 ? 'OUT OF STOCK' : product.stock + ' units remaining' %>
+              </span>
+            </td>
+          </tr>
+          <% if (product.sku) { %>
+            <tr>
+              <td>SKU / Identifier</td>
+              <td style="font-family: monospace;"><%= product.sku %></td>
+            </tr>
+          <% } %>
+          <tr>
+            <td>Category</td>
+            <td><%= product.category %></td>
+          </tr>
+          <tr>
+            <td>Unit Retail Price</td>
+            <td>₦<%= Number(product.price || 0).toLocaleString() %></td>
+          </tr>
+        </table>
+
+        <div class="button-box">
+          <a href="<%= adminUrl %>" class="btn">Manage & Restock Product</a>
+        </div>
+      </div>
+      <div class="footer">
+        Automated platform notification &bull; Nexora Inventory Controller<br>
+        <a href="<%= clientUrl %>/admin/dashboard">Go to Admin Command Console</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

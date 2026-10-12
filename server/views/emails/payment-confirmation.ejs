@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Received - Nexora</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #F8F6F0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #111111;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #F8F6F0;
+      padding: 40px 16px;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #FFFFFF;
+      border: 1px solid #EAE6DC;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .header {
+      background-color: #0C1413;
+      padding: 36px 32px;
+      text-align: center;
+    }
+    .brand {
+      color: #FFFFFF;
+      font-size: 24px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin: 0;
+    }
+    .brand-accent {
+      color: #10B981;
+    }
+    .content {
+      padding: 36px 32px;
+      line-height: 1.6;
+    }
+    .badge-paid {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background-color: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .greeting {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0D1B1A;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .receipt-card {
+      background-color: #FAFAF9;
+      border: 1px solid #EAE6DC;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 24px 0;
+    }
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #4B5563;
+    }
+    .receipt-row:last-child {
+      margin-bottom: 0;
+      padding-top: 10px;
+      border-top: 1px solid #E5E7EB;
+      font-weight: 700;
+      color: #111111;
+      font-size: 16px;
+    }
+    .button-box {
+      text-align: center;
+      margin: 32px 0 16px 0;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #0F766E;
+      color: #FFFFFF !important;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+    .footer {
+      background-color: #FAFAF9;
+      border-top: 1px solid #EAE6DC;
+      padding: 24px 32px;
+      text-align: center;
+      font-size: 12px;
+      color: #9CA3AF;
+    }
+    .footer a {
+      color: #0F766E;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="brand">NEXORA<span class="brand-accent">.</span></h1>
+      </div>
+      <div class="content">
+        <span class="badge-paid">&#10003; Payment Verified</span>
+        <h2 class="greeting">Payment Confirmation</h2>
+        <p>Your payment has been successfully processed and verified by our billing gateway. Your order is now undergoing fulfillment.</p>
+
+        <div class="receipt-card">
+          <div class="receipt-row">
+            <span>Payment Reference</span>
+            <span style="font-family: monospace; font-weight: 600;"><%= paymentDetails.reference %></span>
+          </div>
+          <div class="receipt-row">
+            <span>Order Reference</span>
+            <span>#<%= order._id ? order._id.toString().slice(-6).toUpperCase() : 'N/A' %></span>
+          </div>
+          <div class="receipt-row">
+            <span>Payment Method</span>
+            <span><%= paymentDetails.channel ? paymentDetails.channel.toUpperCase() : 'Paystack' %></span>
+          </div>
+          <div class="receipt-row">
+            <span>Verification Timestamp</span>
+            <span><%= new Date(paymentDetails.paidAt || Date.now()).toLocaleString('en-US') %></span>
+          </div>
+          <div class="receipt-row">
+            <span>Amount Paid</span>
+            <span>₦<%= Number(paymentDetails.amount || order.totalAmount || 0).toLocaleString() %></span>
+          </div>
+        </div>
+
+        <p style="font-size: 14px; color: #4B5563;">A copy of this transaction receipt has been permanently archived with your account order history.</p>
+
+        <div class="button-box">
+          <a href="<%= clientUrl %>/orders/<%= order._id %>" class="btn">View Order Receipt</a>
+        </div>
+      </div>
+      <div class="footer">
+        &copy; <%= year %> Nexora Maison. All rights reserved.<br>
+        <a href="<%= clientUrl %>">Return to Storefront</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
