@@ -37,12 +37,19 @@ api.interceptors.response.use(
       "An unexpected server error occurred.";
 
     // Token expired or invalid → clear session and redirect to login
+    // IMPORTANT: Do NOT redirect when the user is on the login/register page
+    // (e.g. wrong password gives a 401 which should show an error, not redirect)
     if (error.response?.status === 401) {
+      const isAuthPage =
+        window.location.pathname.startsWith("/login") ||
+        window.location.pathname.startsWith("/register");
+
+      // Only clear session & redirect if the user already had an active token
+      // AND we are NOT currently on an auth page (prevent redirect loops)
       const hadToken = !!localStorage.getItem("token");
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      // Only hard-redirect if the user was actually logged in (avoid redirect loops)
-      if (hadToken && !window.location.pathname.startsWith("/login")) {
+      if (hadToken && !isAuthPage) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         window.location.href = "/login";
       }
     }

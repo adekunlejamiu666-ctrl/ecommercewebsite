@@ -31,7 +31,7 @@ Run `npm install` inside both the frontend and backend directories.
 
 **3. Configure environment variables**
 
-Create a `.env` file in the backend directory and add your required database connection, authentication, and payment credentials.
+Create a `.env` file in the backend directory and add your required database connection, authentication, and payment credentials. Set `PAYSTACK_SECRET_KEY` on the backend and `VITE_PAYSTACK_PUBLIC_KEY` in the frontend environment. Use keys from the same Paystack environment (both test keys or both live keys); configure the frontend variable when building/deploying the client.
 
 **4. Start the application**
 

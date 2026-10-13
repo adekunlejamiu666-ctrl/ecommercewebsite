@@ -40,7 +40,7 @@ const VendorRouter = require("./routes/vendor.routes");
 const PaymentRouter = require("./routes/payment.routes");
 const UploadRouter = require("./routes/upload.routes");
 
-// ─── Auth & User Routes ────────────────────────────────────────────────────
+//  Auth & User Routes 
 // Public:  POST /api/v1/register    POST /api/v1/login
 //          POST /api/v1/forgot-password  POST /api/v1/reset-password
 // Private: GET/PUT /api/v1/profile
@@ -49,23 +49,23 @@ const UploadRouter = require("./routes/upload.routes");
 app.use("/api/v1", UserRouter);          // handles /register /login /profile /forgot-password /reset-password
 app.use("/api/v1/users", UserRouter);    // handles /admin/all  /admin/:id/role  /admin/:id (DELETE)
 
-// ─── Categories & Products ────────────────────────────────────────────────
+//  Categories & Products 
 app.use("/api/v1/categories", CategoryRouter);
 app.use("/api/v1/products", ProductRouter);
 
-// ─── Orders ───────────────────────────────────────────────────────────────
+//  Orders 
 app.use("/api/v1/orders", OrderRouter);
 
-// ─── Payments (Paystack) ──────────────────────────────────────────────────
+//  Payments (Paystack) 
 app.use("/api/v1/payment", PaymentRouter);
 
-// ─── Cloudinary Uploads ───────────────────────────────────────────────────
+//  Cloudinary Uploads 
 app.use("/api/v1/upload", UploadRouter);
 
-// ─── Messages ──────────────────────────────────────────────────────────────
+//  Messages 
 app.use("/api/v1/messages", MessageRouter);
 
-// ─── Vendor Requests & Vendor Portal ───────────────────────────────────────
+//  Vendor Requests & Vendor Portal 
 app.use("/api/v1/vendor-requests", VendorRequestRouter);
 app.use("/api/v1/vendor", VendorRouter);
 

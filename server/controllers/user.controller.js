@@ -40,9 +40,80 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: "Last name must be at least 2 letters long." });
   }
 
+  // Strong password validation (backend enforcement)
+  const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&^()\-_=+])[A-Za-z\d@#$!%*?&^()\-_=+]{8,}$/;
+  if (!strongPasswordRegex.test(password)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, one number, and one special character (e.g. @, #, $, !).",
+    });
+  }
+
   try {
     const saltround = await bcryptjs.genSalt(10);
     const hashPass = await bcryptjs.hash(password, saltround);
+
+    let userAvatar = avatar ? String(avatar).trim() : "";
+    let avatarPublicId = "";
+    if (userAvatar && userAvatar.startsWith("data:image/")) {
+      try {
+        const uploadRes = await cloudinaryService.uploadDataUri(userAvatar, "profiles");
+        userAvatar = uploadRes.url;
+        avatarPublicId = uploadRes.public_id;
+      } catch (err) {
+        console.warn("[Cloudinary] Avatar upload warning during registration:", err.message);
+      }
+    }
+
+    const user = await userModel.create({
+      firstname: trimmedFirstname,
+      lastname: trimmedLastname,
+      email,
+      tag,
+      role: role && ["user", "vendor", "admin", "operator"].includes(role) ? role : "user",
+      password: hashPass,
+      avatar: userAvatar,
+      avatarPublicId,
+    });
+
+    // Send welcome email asynchronously
+    emailService.sendWelcomeEmail(user).catch((err) => {
+      console.warn("[EmailService] Welcome email delivery warning:", err.message);
+    });
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "2h",
+        algorithm: "HS256",
+      }
+    );
+
+    return res.status(201).json({
+      message: "User registered successfully.",
+      user: {
+        id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        tag: user.tag,
+        role: user.role,
+        avatar: user.avatar || "",
+        token,
+      },
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "A user with that email or tag already exists." });
+    }
+
+    return res.status(500).json({ message: error.message });
+  }
+};
 
     let userAvatar = avatar ? String(avatar).trim() : "";
     let avatarPublicId = "";
@@ -116,9 +187,10 @@ const loginUser = async (req, res) => {
   try {
     const isUser = await userModel.findOne({ email }).select("+password");
 
+    // Use a single unified 401 message to avoid user enumeration
     if (!isUser) {
-      return res.status(404).json({
-        message: "User not found",
+      return res.status(401).json({
+        message: "Invalid credentials.",
       });
     }
 
@@ -126,7 +198,7 @@ const loginUser = async (req, res) => {
 
     if (!passwordMatch) {
       return res.status(401).json({
-        message: "Incorrect password",
+        message: "Invalid credentials.",
       });
     }
 
@@ -158,11 +230,11 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log("LOGIN ERROR:", error);
+    // Never log passwords or expose internals
+    console.error("[Login] Unexpected error:", error.message);
 
     return res.status(500).json({
-      message: "User cannot login at this time",
-      error: error.message,
+      message: "Unable to sign in at this time. Please try again later.",
     });
   }
 };
