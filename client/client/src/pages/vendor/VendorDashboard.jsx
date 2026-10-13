@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   FiBox,
   FiShoppingBag,
-  FiDollarSign,
   FiClock,
   FiCheckCircle,
   FiAlertTriangle,
@@ -14,6 +13,7 @@ import {
   FiCalendar,
   FiEye,
 } from "react-icons/fi";
+import { TbCurrencyNaira } from "react-icons/tb";
 import vendorService from "../../services/vendorService";
 
 export default function VendorDashboard() {
@@ -97,7 +97,7 @@ export default function VendorDashboard() {
                 className="d-flex align-items-center justify-content-center text-white"
                 style={{ width: "36px", height: "36px", borderRadius: "var(--radius-md)", backgroundColor: "var(--emerald)" }}
               >
-                <FiDollarSign size={18} />
+                <TbCurrencyNaira size={22} />
               </div>
             </div>
             <h2 className="fw-bold text-black mb-1 font-serif" style={{ fontSize: "1.75rem" }}>

@@ -92,33 +92,75 @@ export default function Profile() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Allowed image types — must match backend upload.middleware.js
-  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  // Allowed image types — strict PNG, JPEG, and WebP only
+  const ALLOWED_IMAGE_MIMES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const ALLOWED_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"];
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Strict MIME type check — don't trust filename alone
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    const fileName = (file.name || "").toLowerCase();
+    const hasValidExt = ALLOWED_IMAGE_EXTENSIONS.some((ext) => fileName.endsWith(ext));
+    const hasValidMime = ALLOWED_IMAGE_MIMES.includes(file.type.toLowerCase());
+
+    // Strict format check — reject gif, svg, pdf, etc.
+    if (!hasValidExt || !hasValidMime) {
       setErrorMsg(
-        "Please upload a valid image file. Only JPEG, JPG, PNG, and WebP formats are accepted."
+        "Please upload a valid image file. Only PNG, JPEG, and WebP formats are allowed."
       );
+      setSuccessMsg("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
       setErrorMsg("Image size must be less than 5 MB. Please choose a smaller file.");
+      setSuccessMsg("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData((prev) => ({ ...prev, avatar: reader.result }));
-      setErrorMsg("");
-      setSuccessMsg("");
+    reader.onload = (loadEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        // Optimize avatar dimensions: max 512x512 with aspect ratio maintained
+        const maxDim = 512;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const exportMime =
+          file.type.toLowerCase() === "image/png"
+            ? "image/png"
+            : file.type.toLowerCase() === "image/webp"
+            ? "image/webp"
+            : "image/jpeg";
+
+        const optimizedDataUrl = canvas.toDataURL(exportMime, 0.88);
+
+        setFormData((prev) => ({ ...prev, avatar: optimizedDataUrl }));
+        setErrorMsg("");
+        setSuccessMsg("New photo selected! Click 'Save Profile Changes' below to persist your update.");
+      };
+      img.onerror = () => {
+        setErrorMsg("Failed to process the image file. Please try another image.");
+      };
+      img.src = loadEvent.target.result;
     };
     reader.onerror = () => {
       setErrorMsg("Failed to read the image file. Please try again.");
@@ -224,7 +266,7 @@ export default function Profile() {
         <div className="mb-5 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 pb-4 border-bottom" style={{ borderColor: "var(--card-border)" }}>
           <div>
             <div className="d-flex align-items-center gap-2 mb-2">
-              <span className="badge-emerald">Account Persona</span>
+              <span className="badge-emerald">Account Personal</span>
               {isAdmin && (
                 <span className="badge" style={{ backgroundColor: "#0F766E", color: "#FFFFFF", borderRadius: "var(--radius-pill)", padding: "0.3rem 0.8rem", fontSize: "0.72rem", letterSpacing: "0.05em", fontWeight: 700 }}>
                   <FiShield className="me-1" /> ADMINISTRATOR
@@ -698,7 +740,7 @@ export default function Profile() {
                           type="file"
                           ref={fileInputRef}
                           className="d-none"
-                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                          accept="image/png,image/jpeg,image/webp"
                           onChange={handleImageChange}
                           id="avatar-file-input"
                         />
@@ -736,6 +778,9 @@ export default function Profile() {
                             {showUrlInput ? "Hide Link Option" : "Provide Web URL"}
                           </button>
                         </div>
+                        <span className="small text-muted d-block" style={{ fontSize: "0.74rem" }}>
+                          Allowed formats: <strong>PNG, JPEG, and WebP</strong> (Max 5 MB).
+                        </span>
 
                         {showUrlInput && (
                           <div className="mt-3">

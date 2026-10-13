@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-  FiDollarSign,
   FiShoppingBag,
   FiUsers,
   FiBox,
@@ -16,6 +15,7 @@ import {
   FiCheckCircle,
   FiEdit2,
 } from "react-icons/fi";
+import { TbCurrencyNaira } from "react-icons/tb";
 import orderService from "../../services/orderService";
 import productService from "../../services/productService";
 import userService from "../../services/userService";
@@ -153,7 +153,7 @@ export default function Dashboard() {
                 className="d-flex align-items-center justify-content-center text-white"
                 style={{ width: "36px", height: "36px", borderRadius: "var(--radius-md)", backgroundColor: "var(--emerald)" }}
               >
-                <FiDollarSign size={18} />
+                <TbCurrencyNaira size={22} />
               </div>
             </div>
             <h2 className="fw-bold text-black mb-1 font-serif" style={{ fontSize: "1.75rem" }}>

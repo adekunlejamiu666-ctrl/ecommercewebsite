@@ -54,12 +54,23 @@ const registerUser = async (req, res) => {
     let userAvatar = avatar ? String(avatar).trim() : "";
     let avatarPublicId = "";
     if (userAvatar && userAvatar.startsWith("data:image/")) {
+      const match = userAvatar.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,/i);
+      const subType = match ? match[1].toLowerCase() : "";
+      const allowedTypes = ["png", "jpeg", "jpg", "webp"];
+
+      if (!allowedTypes.includes(subType)) {
+        return res.status(400).json({
+          message: "Please upload a valid image file. Only PNG, JPEG, and WebP formats are allowed.",
+        });
+      }
+
       try {
         const uploadRes = await cloudinaryService.uploadDataUri(userAvatar, "profiles");
         userAvatar = uploadRes.url;
         avatarPublicId = uploadRes.public_id;
       } catch (err) {
-        console.warn("[Cloudinary] Avatar upload warning during registration:", err.message);
+        console.warn("[Cloudinary] Avatar upload warning during registration, persisting in database:", err.message);
+        // Retain userAvatar as base64 so profile picture is never lost
       }
     }
 
@@ -294,16 +305,34 @@ const updateUserProfile = async (req, res) => {
     let oldAvatarPublicIdToDelete = null;
     if (avatar !== undefined && avatar !== null) {
       if (typeof avatar === "string" && avatar.startsWith("data:image/")) {
+        const match = avatar.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,/i);
+        const subType = match ? match[1].toLowerCase() : "";
+        const allowedTypes = ["png", "jpeg", "jpg", "webp"];
+
+        if (!allowedTypes.includes(subType)) {
+          return res.status(400).json({
+            message: "Please upload a valid image file. Only PNG, JPEG, and WebP formats are allowed.",
+          });
+        }
+
         try {
           const uploadRes = await cloudinaryService.uploadDataUri(avatar, "profiles");
           oldAvatarPublicIdToDelete = user.avatarPublicId || null;
           user.avatar = uploadRes.url;
           user.avatarPublicId = uploadRes.public_id;
         } catch (err) {
-          console.warn("[Cloudinary] Avatar update error:", err.message);
+          console.warn("[Cloudinary] Avatar update error, persisting in database:", err.message);
+          // Fallback to storing in MongoDB so the profile picture is never lost
+          user.avatar = avatar;
         }
-      } else {
-        user.avatar = avatar;
+      } else if (typeof avatar === "string") {
+        if (avatar.trim() === "") {
+          oldAvatarPublicIdToDelete = user.avatarPublicId || null;
+          user.avatar = "";
+          user.avatarPublicId = "";
+        } else {
+          user.avatar = avatar.trim();
+        }
       }
     }
 

@@ -4,7 +4,6 @@ import {
   FiBriefcase,
   FiBox,
   FiShoppingBag,
-  FiDollarSign,
   FiEye,
   FiUserMinus,
   FiCheck,

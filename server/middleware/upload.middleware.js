@@ -17,7 +17,7 @@ const fileFilter = (req, file, cb) => {
   } else {
     cb(
       new Error(
-        "Please upload a valid image file. Only JPEG, JPG, PNG, and WebP formats are accepted."
+        "Please upload a valid image file. Only PNG, JPEG, and WebP formats are allowed."
       ),
       false
     );
