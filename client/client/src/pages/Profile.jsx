@@ -92,22 +92,36 @@ export default function Profile() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Allowed image types — must match backend upload.middleware.js
+  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      return setErrorMsg("Please select an image file (PNG, JPG, WebP, etc.).");
+    // Strict MIME type check — don't trust filename alone
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setErrorMsg(
+        "Please upload a valid image file. Only JPEG, JPG, PNG, and WebP formats are accepted."
+      );
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return setErrorMsg("Image size must be less than 5MB.");
+      setErrorMsg("Image size must be less than 5 MB. Please choose a smaller file.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
       setFormData((prev) => ({ ...prev, avatar: reader.result }));
       setErrorMsg("");
+      setSuccessMsg("");
+    };
+    reader.onerror = () => {
+      setErrorMsg("Failed to read the image file. Please try again.");
     };
     reader.readAsDataURL(file);
   };
@@ -684,8 +698,9 @@ export default function Profile() {
                           type="file"
                           ref={fileInputRef}
                           className="d-none"
-                          accept="image/*"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
                           onChange={handleImageChange}
+                          id="avatar-file-input"
                         />
 
                         <div className="d-flex flex-wrap align-items-center gap-2 mb-2">

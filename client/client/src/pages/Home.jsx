@@ -443,6 +443,184 @@ export default function Home() {
         </section>
       )}
 
+      {/* 7c. SHOP BY COLLECTION */}
+      <section
+        className="py-5"
+        style={{ backgroundColor: "#0C1413", borderTop: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <div className="container">
+          <div className="d-flex justify-content-between align-items-end mb-5">
+            <div>
+              <span className="badge-emerald mb-2">HANDPICKED FOR YOU</span>
+              <h2
+                className="font-serif fw-bold text-white mb-1"
+                style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)", letterSpacing: "-0.01em" }}
+              >
+                Shop by Collection
+              </h2>
+              <p className="mb-0" style={{ color: "#A1A1AA", fontSize: "0.92rem" }}>
+                Curated edits designed around the way you shop.
+              </p>
+            </div>
+            <Link
+              to="/shop"
+              className="text-decoration-none fw-semibold small d-flex align-items-center gap-1"
+              style={{ color: "#A1A1AA" }}
+            >
+              All Products <FiChevronRight />
+            </Link>
+          </div>
+
+          <div className="row g-4">
+            {[
+              {
+                id: "new-arrivals",
+                label: "JUST DEBUTED",
+                title: "New Arrivals",
+                description:
+                  "Fresh pieces added daily. Be the first to discover what's just landed in our curated marketplace.",
+                href: "/shop?sort=newest",
+                image:
+                  "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop",
+                accent: "#10B981",
+              },
+              {
+                id: "best-sellers",
+                label: "MOST COVETED",
+                title: "Best Sellers",
+                description:
+                  "The products our customers keep coming back for. Trusted quality, proven results.",
+                href: "/shop?sort=bestselling",
+                image:
+                  "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=800&auto=format&fit=crop",
+                accent: "#F59E0B",
+              },
+              {
+                id: "trending",
+                label: "RIGHT NOW",
+                title: "Trending Products",
+                description:
+                  "What everyone is talking about. Stay ahead with the pieces dominating the conversation.",
+                href: "/shop?featured=true",
+                image:
+                  "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=800&auto=format&fit=crop",
+                accent: "#8B5CF6",
+              },
+              {
+                id: "special-offers",
+                label: "LIMITED TIME",
+                title: "Special Offers",
+                description:
+                  "Exclusive deals and seasonal discounts on premium items. Shop before they're gone.",
+                href: "/shop?deals=true",
+                image:
+                  "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800&auto=format&fit=crop",
+                accent: "#EF4444",
+              },
+            ].map((col) => (
+              <div key={col.id} className="col-12 col-sm-6 col-xl-3">
+                <div
+                  className="position-relative overflow-hidden h-100"
+                  style={{
+                    borderRadius: "8px",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "#111827",
+                    cursor: "pointer",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    minHeight: "380px",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = "translateY(-4px)";
+                    e.currentTarget.style.boxShadow = "0 20px 40px rgba(0,0,0,0.4)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  {/* Background image */}
+                  <img
+                    src={col.image}
+                    alt={col.title}
+                    loading="lazy"
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      opacity: 0.35,
+                    }}
+                  />
+                  {/* Gradient overlay */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      background:
+                        "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(12,20,19,0.97) 100%)",
+                    }}
+                  />
+                  {/* Content */}
+                  <div
+                    className="position-relative d-flex flex-column justify-content-end p-4"
+                    style={{ minHeight: "380px" }}
+                  >
+                    <span
+                      className="fw-bold mb-2"
+                      style={{
+                        fontSize: "0.68rem",
+                        letterSpacing: "0.1em",
+                        color: col.accent,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {col.label}
+                    </span>
+                    <h3
+                      className="font-serif fw-bold text-white mb-2"
+                      style={{ fontSize: "1.4rem", lineHeight: 1.2 }}
+                    >
+                      {col.title}
+                    </h3>
+                    <p
+                      className="mb-4"
+                      style={{
+                        color: "rgba(255,255,255,0.55)",
+                        fontSize: "0.82rem",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {col.description}
+                    </p>
+                    <Link
+                      to={col.href}
+                      id={`collection-btn-${col.id}`}
+                      className="btn d-inline-flex align-items-center gap-2 fw-semibold"
+                      style={{
+                        backgroundColor: col.accent,
+                        color: "#ffffff",
+                        border: "none",
+                        borderRadius: "4px",
+                        padding: "0.6rem 1.25rem",
+                        fontSize: "0.82rem",
+                        alignSelf: "flex-start",
+                      }}
+                    >
+                      Shop Collection <FiArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 8. BECOME A VENDOR BANNER */}
       <section
         style={{

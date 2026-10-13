@@ -10,23 +10,48 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 const connectDB = require("./database/connectDB");
 const app = express();
 
+// Normalize CLIENT_URL: ensure it always starts with https://
+const rawClientUrl = process.env.CLIENT_URL || "";
+const normalizedClientUrl = rawClientUrl
+  ? rawClientUrl.startsWith("http")
+    ? rawClientUrl
+    : `https://${rawClientUrl}`
+  : "";
+
 const allowedOrigins = [
-  process.env.CLIENT_URL,
+  normalizedClientUrl,
   "https://ecommercewebsite-uxqh.vercel.app",
+  "https://ecommercewebsite-pi-lovat.vercel.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  "http://localhost:5174",    // Vite fallback port
+  "http://localhost:5174",
   "http://127.0.0.1:5174",
   "http://localhost:5175",
   "http://127.0.0.1:5175",
 ].filter(Boolean);
 
-app.use(cors({
-  origin: allowedOrigins,
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`[CORS] Blocked origin: ${origin}`);
+    return callback(new Error(`CORS policy: origin ${origin} is not allowed.`));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: false,
-}));
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11) choke on 204
+};
+
+app.use(cors(corsOptions));
+
+// Explicitly handle OPTIONS preflight for all routes
+// Vercel serverless sometimes intercepts OPTIONS before Express — this ensures
+// our CORS headers are always set on preflight requests.
+app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 

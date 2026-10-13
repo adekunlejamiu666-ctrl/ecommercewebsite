@@ -34,6 +34,36 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
+  // On app load: if a token exists, always refresh the user profile from the
+  // backend so the avatar URL (stored in MongoDB/Cloudinary) is always current.
+  // This is the primary fix for avatar persistence after page reload.
+  useEffect(() => {
+    if (!token) return;
+
+    authService
+      .getProfile()
+      .then((freshUser) => {
+        if (freshUser) {
+          setUser((prev) => {
+            const merged = {
+              ...(prev || {}),
+              ...freshUser,
+              // Ensure id is always set
+              id: freshUser.id || freshUser._id || prev?.id,
+            };
+            localStorage.setItem("user", JSON.stringify(merged));
+            return merged;
+          });
+        }
+      })
+      .catch((err) => {
+        // If the token is invalid/expired, the response interceptor in api.js
+        // will already handle clearing it and redirecting — just log here.
+        console.warn("[AuthContext] Could not refresh profile:", err.message);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // Re-run whenever the token changes (login/logout/registration)
+
   const login = async (email, password) => {
     setLoading(true);
     try {

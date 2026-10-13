@@ -5,6 +5,10 @@ const userModel = require("../models/user.models");
 const emailService = require("../services/email.service");
 const cloudinaryService = require("../services/cloudinary.service");
 
+// Strong password regex: min 8 chars, upper, lower, digit, special char
+const STRONG_PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&^()\-_=+])[A-Za-z\d@#$!%*?&^()\-_=+]{8,}$/;
+
 const registerUser = async (req, res) => {
   const { firstname, lastname, email, password, tag, role, avatar } = req.body;
 
@@ -19,30 +23,24 @@ const registerUser = async (req, res) => {
   if (/\d/.test(trimmedFirstname)) {
     return res.status(400).json({ message: "First name cannot contain numbers. Only letters are allowed." });
   }
-
   if (!nameRegex.test(trimmedFirstname)) {
     return res.status(400).json({ message: "First name must contain only letters." });
   }
-
   if (trimmedFirstname.length < 2) {
     return res.status(400).json({ message: "First name must be at least 2 letters long." });
   }
-
   if (/\d/.test(trimmedLastname)) {
     return res.status(400).json({ message: "Last name cannot contain numbers. Only letters are allowed." });
   }
-
   if (!nameRegex.test(trimmedLastname)) {
     return res.status(400).json({ message: "Last name must contain only letters." });
   }
-
   if (trimmedLastname.length < 2) {
     return res.status(400).json({ message: "Last name must be at least 2 letters long." });
   }
 
-  // Strong password validation (backend enforcement)
-  const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$!%*?&^()\-_=+])[A-Za-z\d@#$!%*?&^()\-_=+]{8,}$/;
-  if (!strongPasswordRegex.test(password)) {
+  // Strong password enforcement (backend)
+  if (!STRONG_PASSWORD_REGEX.test(password)) {
     return res.status(400).json({
       message:
         "Password must be at least 8 characters and include at least one uppercase letter, one lowercase letter, one number, and one special character (e.g. @, #, $, !).",
@@ -82,15 +80,9 @@ const registerUser = async (req, res) => {
     });
 
     const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "2h",
-        algorithm: "HS256",
-      }
+      { expiresIn: "2h", algorithm: "HS256" }
     );
 
     return res.status(201).json({
@@ -110,69 +102,6 @@ const registerUser = async (req, res) => {
     if (error.code === 11000) {
       return res.status(409).json({ message: "A user with that email or tag already exists." });
     }
-
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-    let userAvatar = avatar ? String(avatar).trim() : "";
-    let avatarPublicId = "";
-    if (userAvatar && userAvatar.startsWith("data:image/")) {
-      try {
-        const uploadRes = await cloudinaryService.uploadDataUri(userAvatar, "profiles");
-        userAvatar = uploadRes.url;
-        avatarPublicId = uploadRes.public_id;
-      } catch (err) {
-        console.warn("[Cloudinary] Avatar upload warning during registration:", err.message);
-      }
-    }
-
-    const user = await userModel.create({
-      firstname: trimmedFirstname,
-      lastname: trimmedLastname,
-      email,
-      tag,
-      role: role && ["user", "vendor", "admin", "operator"].includes(role) ? role : "user",
-      password: hashPass,
-      avatar: userAvatar,
-      avatarPublicId,
-    });
-
-    // Send welcome email asynchronously
-    emailService.sendWelcomeEmail(user).catch((err) => {
-      console.warn("[EmailService] Welcome email delivery warning:", err.message);
-    });
-
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "2h",
-        algorithm: "HS256",
-      }
-    );
-
-    return res.status(201).json({
-      message: "User registered successfully.",
-      user: {
-        id: user._id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-        tag: user.tag,
-        role: user.role,
-        avatar: user.avatar || "",
-        token,
-      },
-    });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(409).json({ message: "A user with that email or tag already exists." });
-    }
-
     return res.status(500).json({ message: error.message });
   }
 };
@@ -187,10 +116,10 @@ const loginUser = async (req, res) => {
   try {
     const isUser = await userModel.findOne({ email }).select("+password");
 
-    // Use a single unified 401 message to avoid user enumeration
+    // Unified 401 for both wrong email and wrong password (prevents user enumeration)
     if (!isUser) {
       return res.status(401).json({
-        message: "Invalid credentials.",
+        message: "Invalid credentials. Please check your email and password.",
       });
     }
 
@@ -198,20 +127,14 @@ const loginUser = async (req, res) => {
 
     if (!passwordMatch) {
       return res.status(401).json({
-        message: "Invalid credentials.",
+        message: "Invalid credentials. Please check your email and password.",
       });
     }
 
     const token = jwt.sign(
-      {
-        id: isUser._id,
-        role: isUser.role,
-      },
+      { id: isUser._id, role: isUser.role },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-        algorithm: "HS256",
-      }
+      { expiresIn: "7d", algorithm: "HS256" }
     );
 
     return res.status(200).json({
@@ -230,9 +153,7 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    // Never log passwords or expose internals
     console.error("[Login] Unexpected error:", error.message);
-
     return res.status(500).json({
       message: "Unable to sign in at this time. Please try again later.",
     });
@@ -252,7 +173,6 @@ const requestPasswordReset = async (req, res) => {
       return res.status(404).json({ message: "No account found with this email." });
     }
 
-    // Generate 32-byte hex token
     const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
 
@@ -260,14 +180,13 @@ const requestPasswordReset = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
     await user.save({ validateBeforeSave: false });
 
-    // Send password reset email
     emailService.sendPasswordResetEmail(user, resetToken).catch((err) => {
       console.warn("[EmailService] Password reset email delivery warning:", err.message);
     });
 
     return res.status(200).json({
       message: "Password reset link sent to your email successfully.",
-      resetToken, // Returned for testing or direct verification
+      resetToken,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -284,10 +203,12 @@ const resetPassword = async (req, res) => {
   try {
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-    const user = await userModel.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: Date.now() },
-    }).select("+password");
+    const user = await userModel
+      .findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: { $gt: Date.now() },
+      })
+      .select("+password");
 
     if (!user) {
       return res.status(400).json({ message: "Invalid or expired reset token." });
@@ -401,6 +322,7 @@ const updateUserProfile = async (req, res) => {
     if (oldAvatarPublicIdToDelete) {
       cloudinaryService.deleteImage(oldAvatarPublicIdToDelete).catch(() => {});
     }
+
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully.",
